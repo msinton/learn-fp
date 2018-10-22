@@ -1,0 +1,143 @@
+| :curry: \gcurrying :curry:
+
+--
+The technique of translating \c the evaluation\s of a function that takes multiple arguments into \c evaluating\s
+a sequence of functions each with a single argument.
+--
+
+Trivia: Who is it named after and why?
+--
+
+Example
+```
+def f(x: X, y: Y): Z = ???
+```
+--
+becomes
+
+```
+def f(x: X): (Y => Z) = ???
+```
+--
+
+\ycurry this:
+
+```
+def quadraticHasRealRoots(a: Int, b: Int, c: Int): Boolean =
+  (b * b - 4 * a * c) >= 0
+```
+
+--
+
+Practical example
+```
+def multiply(x: Int)(y: Int): Long = x * y
+
+val times2 = multiply(2)
+val times3 = multiply(3)
+
+times2(5)
+times3(5)
+```
+
+---
+
+| \gPartial function application
+
+related to but not the same as \ccurrying\s
+
+- Fixes some of the arguments and returns a function that requires all the remaining arguments
+
+--
+
+```
+def quadratic(a: Int, b: Int, c: Int, x: Int): Long =
+  a * x * x + b * x + c
+```
+
+Suppose we know what x is (10) and we want to try different \ya\s, \yb\s and \yc\s combinations?
+(Think angry birds... you could use this to programmatically win?)
+--
+
+```
+val quadraticAt10 = quadratic(_: Int, _: Int, _: Int, 10)
+
+quadraticAt10(1, 2, 3)
+
+quadraticAt10(2, -9, 0)
+```
+
+---
+| \*\gIn the Real World\s:tm:
+
+Begone foul dependency injection beasts. Back to the dungeons from whence you came.
+--
+
+```
+case class Email(subject: String, text: String, sender: String, recipient: String)
+
+type EmailFilter = Email => Boolean
+
+case class User(name: String)
+
+trait EmailRepository {
+  def getMails(user: User, unread: Boolean): Seq[Email]
+}
+
+trait FilterRepository {
+  def getEmailFilter(user: User): EmailFilter
+}
+
+trait MailboxService {
+  def getNewMails(emailRepo: EmailRepository)(filterRepo: FilterRepository)(user: User) =
+    emailRepo.getMails(user, true)
+      .filter(filterRepo.getEmailFilter(user))
+
+  val newMails: User => Seq[Email]
+}
+```
+--
+
+```
+object MockEmailRepository extends EmailRepository {
+  def getMails(user: User, unread: Boolean): Seq[Email] = Nil
+}
+
+object MockFilterRepository extends FilterRepository {
+  def getEmailFilter(user: User): EmailFilter = _ => true
+}
+
+object MailboxServiceWithMockDeps extends MailboxService {
+  val newMails: (User) => Seq[Email] =
+    getNewMails(MockEmailRepository)(MockFilterRepository) _
+}
+```
+
+---
+
+| :star: \*Bonus points :start:
+//
+
+`.curried` and `.uncurried`
+
+---
+
+| \g Quotes
+
+- In conclusion: currying is good, because it lets you specialize/partially apply functions using a lightweight syntax and then pass these partially applied functions around to higher order function such as map or filter. Higher order functions (which take functions as parameters or yield them as results) are the bread and butter of functional programming, and currying and partially applied functions enable higher order functions to be used much more effectively and concisely.
+
+The practical answer is that currying makes creating anonymous functions much easier. Even with a minimal lambda syntax, it's something of a win; compare:
+
+```
+def add(x: Int, y: Int) = x + y
+
+(1 to 10) map add(1)
+```
+
+to
+```
+(1 to 10) map { x => x + 1 }
+```
+
+"This becomes increasingly useful as you use more and more higher-order functions. While I use more higher-order functions in Haskell than in other languages, I've found I actually use the lambda syntax less because something like two thirds of the time, the lambda would just be a partially applied function. (And much of the other time I extract it into a named function.)"
+
