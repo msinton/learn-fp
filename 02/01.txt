@@ -135,7 +135,7 @@ and currying and partially applied functions enable higher order functions to be
 
 ---
 
-The practical answer is that currying makes creating anonymous functions much easier.
+- The practical answer is that currying makes creating anonymous functions much easier.
 Even with a minimal lambda syntax, it's something of a win; compare:
 
 ```

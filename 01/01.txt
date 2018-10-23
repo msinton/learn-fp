@@ -13,7 +13,6 @@ trait CreditCard { def charge(amount: Int)}
 trait Cup { def price: Int }
 
 class Coffee extends Cup { def price: Int = 249 }
-case class Charge(creditCard: CreditCard, cost: Int)
 
 class Cafe {
   def buyCoffee(cc: CreditCard): Coffee = {
@@ -99,7 +98,7 @@ val r1 = x.reverse
 val r2 = x.reverse
 ```
 --
-Replace occurences of x with the expression it references
+Replace occurrences of x with the expression it references
 
 ```
 val r1 = "Hello World".reverse
@@ -134,7 +133,8 @@ val r2 = x.append(" World").toString
 --
 /\m+\c=\s
 \*Referential Transparency:\s
-An expression \ce\s is RT if, for all programs \mp\s, all occurences of \ce\s in p can be replaced by the result of evaluating \ce\s - without affecting the meaning of \mp\s.
+An expression \ce\s is RT if, for all programs \mp\s, all occurrences of \ce\s in p can be replaced by the
+result of evaluating \ce\s - without affecting the meaning of \mp\s.
 
 \*Pure Functions:\s
 A function \yf\s is pure if the expression \yf\s(\cx\s) is referentially transparent for all referentially transparent \mx\s
@@ -152,20 +152,5 @@ Why is it important?
 | \gWhat would you like to cover in these sessions?
 
 
---
-
-Topics:
-
-
-
-Higher Order Functions
-
-
-
-Currying
-
-
-
-Companion Objects - apply and unapply and pattern matching
 
 
