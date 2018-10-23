@@ -1,0 +1,171 @@
+
+| \gWhat do you like about FP?
+
+---
+
+
+| \gA simple example on the benefits of FP
+--
+
+
+```
+trait CreditCard { def charge(amount: Int)}
+trait Cup { def price: Int }
+
+class Coffee extends Cup { def price: Int = 249 }
+case class Charge(creditCard: CreditCard, cost: Int)
+
+class Cafe {
+  def buyCoffee(cc: CreditCard): Coffee = {
+    val cup = new Coffee()
+    cc.charge(cup.price)
+    cup
+  }
+}
+```
+
+--
+- where is the side effect?
+
+--
+- how do you test?
+
+--
+- how can we improve?
+
+---
+
+| \gTestable
+
+```
+trait Payments {
+  def charge(cc: CreditCard, amount: Int): Unit 
+}
+
+class Cafe {
+  def buyCoffee(cc: CreditCard, payments: Payments): Coffee = {
+    val cup = new Coffee()
+    payments.charge(cc, cup.price)
+    cup
+  }
+}
+```
+
+---
+| \cFunctional
+
+/\m+\c=\s
+
+```
+case class Charge(cc: CreditCard, amount: Int)
+
+class Cafe {
+  def buyCoffee(cc: CreditCard): (Coffee, Charge) = {
+    val cup = new Coffee()
+    (cup, Charge(cc, cup.price))
+  }
+}
+```
+
+--
+\*what are the benefits?
+
+--
+- buy coffees
+- coalesce
+--
+
+| We still need side effects but concentrating them into smaller portions of the code base has huge benefits
+
+---
+| \gReferential Transparency
+
+--
+\*What is it?
+
+related to Pure Functions but it is a more general principle (for expressions - not only functions)
+We’ll start with a simple definition and then look at a more formal definition later
+
+--
+\*Simple definition
+
+Take a reference (a val) and then substitute that reference with what the val refers to and nothing changes.
+--
+
+Example:
+```
+val x = "Hello World"
+val r1 = x.reverse
+val r2 = x.reverse
+```
+--
+Replace occurences of x with the expression it references
+
+```
+val r1 = "Hello World".reverse
+val r2 = "Hello World".reverse
+```
+---
+
+RT is a bit boring - that's a good thing. We don't want to be suprised!
+--
+
+What is not RT?
+--
+
+```
+val x = new StringBuilder("Hello")
+val y = x.append(" World")
+val r1 = y.toString
+val r2 = y.toString
+```
+--
+
+Again, now we replace y
+
+```
+val x = new StringBuilder("Hello")
+val r1 = x.append(" World").toString
+val r2 = x.append(" World").toString
+```
+--
+
+\*append\s is not a pure function and therefore \*y\s is not RT
+--
+/\m+\c=\s
+\*Referential Transparency:\s
+An expression \ce\s is RT if, for all programs \mp\s, all occurences of \ce\s in p can be replaced by the result of evaluating \ce\s - without affecting the meaning of \mp\s.
+
+\*Pure Functions:\s
+A function \yf\s is pure if the expression \yf\s(\cx\s) is referentially transparent for all referentially transparent \mx\s
+
+/\m+\c=\s
+
+---
+
+
+Why is it important?
+
+
+
+---
+| \gWhat would you like to cover in these sessions?
+
+
+--
+
+Topics:
+
+
+
+Higher Order Functions
+
+
+
+Currying
+
+
+
+Companion Objects - apply and unapply and pattern matching
+
+
