@@ -1,0 +1,164 @@
+| \bLunch and Learn - Handling errors without exceptions
+
+--
+Throwing exceptions is a side effect.
+What is used in functional code instead?
+
+--
+We have to raise and handle errors functionally. How does it works?
+
+--
+The big idea is that we can represent failures and exceptions with ordinary values. 
+This is \*SAFER\s and retains \*REFERENTIAL TRANSPARENCY\s. 
+---
+| \rBad aspects of exceptions
+--
+
+\*Exceptions break referential transparency.\s \yWe sow it in the first session
+Exceptions should be used only for error handling, not for control flow.
+
+--
+
+\*Exceptions are not type-safe\s 
+If we forget to check for an exception, this won't be detected until runtime. 
+
+---
+| \gGood aspect of exceptions
+--
+
+They allow us to consolidate and centralize error-handling logic.
+---
+
+| \bPosible alternatives to exceptions
+
+--
+
+Consider this partial function to compute the mean of a list
+
+```
+def mean(xs: Seq[Double]): Double =
+  if (xs.isEmpty)
+    throw new ArithmeticException("mean of emtpy list")
+  else xs.sum / xs.length
+```
+
+Alternatives to throw?
+---
+| 1.- Return some sort of bogus value of type Double or NULL
+
+```
+def mean(xs: Seq[Double]): Double =
+  xs.sum / xs.length
+```
+
+When the input is empty return 0.0/0.0 which is Double.NaN 
+--
+
+
+```
+def mean(xs: Seq[Double]): Double =
+  if (xs.isEmpty)
+    null
+  else xs.sum / xs.length
+```
+
+We can return null instead of a value of the needed type.
+---
+This general class of approaches is how error handling is often fone in languages without exceptions, and we reject this solutions for a few reasons:
+
+--
+ * It allows errors to silently propage
+
+--
+ * It's error-prone and boilerplate code checking each error. (if statements for each function with error codes)
+
+--
+ * It's not applicable to polymorphic code. (For some output types, we might not even have a sentinel value of that type)
+
+--
+ * It demands a special policy or calling convention of callers.
+---
+| 2.- Argument that tells us what to do
+
+```
+def mean(xs: IndexedSeq[Double], onEmpty: Double): Double =
+  if (xs.isEmpty) onEmpty
+  else xs.sum / xs.length
+```
+
+This make mean into a total function but what if we need a way to defer the decision of how to handle undefined cases?
+---
+| 3.- The Option data type
+
+The solution is to represent explicitly in the return type that a function may not always have an answer.
+
+```
+def mean(xs: Seq[Double]): Option[Double] =
+  if (xs.isEmpty) None
+  else Some(xs.sum / xs.length)
+```
+
+--
+The conclusion could be that once we start using Option, it infects our entire code base.
+We should modify our code to hanlde either Some or None... \*biut this doesn't happen\s, and the reason is that we can \*lift\s ordinary functions that operate on Option.
+
+--
+```
+def lift[A,B](f: A => B): Option[A] => Option[B] = _ map f
+```
+
+--
+\bBetween map, lift, sequence, and so on, you should never have to modify any existing functions to work with optional values.
+---
+| 4.- The Either data type
+
+Sometimes just knowing whether a failure ocurred (None value) is sufficient, in which case we can use Option.
+Other times we want more information, we might want a String that gives more information, or if an exception was raised, we might want to know what that error actually was.
+
+--
+This could be the main code:
+
+```
+sealed trait Either[+E, +A]
+case class Left[+E](value: E) extends Either[E, Nothing]
+case class Right[+A](value: A) extends Either[Nothing, A]
+```
+
+--
+* It has only two cases, just like Option, but the essential difference is that both cases carry a value.
+--
+* In a very general way, the Either data type represents values that can be one of two things.
+--
+* When we use it to indicate success or failure, by convention the Right constructor is reserved for the success case (a pun on "right" meaning correct), and Left is used for failure.
+--
+
+If we go to the mean example again:
+
+```
+def mean(xs: IndexedSeq[Double]): Either[String, Double] =
+  if (xs.isEmpty)
+    Left("mean of empty list!")
+  else
+    Right(xs.sum / xs.length)
+```
+
+--
+If we want to include more information about an error:
+
+```
+def saveDiv(x: Int, y: Int): Either[Exception, Int] =
+  try Right(x / y)
+  catch {case e: Exception => Left(e)}
+```
+
+--
+And we could write a Try function to convert thrown exceptions to values:
+
+```
+def Try[A](a: => A): Either[Exception, A] =
+  try Right(a)
+  catch {case e: Exception => Left(e)}
+```
+---
+Thanks for coming!!
+
