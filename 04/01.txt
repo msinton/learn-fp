@@ -86,7 +86,7 @@ def mean(xs: IndexedSeq[Double], onEmpty: Double): Double =
   else xs.sum / xs.length
 ```
 
-This make mean into a total function but what if we need a way to defer the decision of how to handle undefined cases?
+This transforms \rmean\s into a total function but what if we need a way to defer the decision of how to handle undefined cases?
 ---
 | 3.- The Option data type
 
