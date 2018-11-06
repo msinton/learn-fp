@@ -64,7 +64,7 @@ def mean(xs: Seq[Double]): Double =
 
 We can return null instead of a value of the needed type.
 ---
-This general class of approaches is how error handling is often fone in languages without exceptions, and we reject this solutions for a few reasons:
+This general class of approaches is how error handling is often done in languages without exceptions, and we reject this solution for a few reasons:
 
 --
  * It allows errors to silently propage
