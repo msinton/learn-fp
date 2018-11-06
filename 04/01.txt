@@ -14,7 +14,7 @@ This is \*SAFER\s and retains \*REFERENTIAL TRANSPARENCY\s.
 | \rBad aspects of exceptions
 --
 
-\*Exceptions break referential transparency.\s \yWe sow it in the first session
+\*Exceptions break referential transparency.\s \yWe saw it in the first session
 Exceptions should be used only for error handling, not for control flow.
 
 --
