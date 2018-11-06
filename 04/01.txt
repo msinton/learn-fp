@@ -5,7 +5,7 @@ Throwing exceptions is a side effect.
 What is used in functional code instead?
 
 --
-We have to raise and handle errors functionally. How does it works?
+We have to raise and handle errors functionally. How does it work?
 
 --
 The big idea is that we can represent failures and exceptions with ordinary values. 
