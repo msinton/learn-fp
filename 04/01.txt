@@ -67,7 +67,7 @@ We can return null instead of a value of the needed type.
 This general class of approaches is how error handling is often done in languages without exceptions, and we reject this solution for a few reasons:
 
 --
- * It allows errors to silently propage
+ * It allows errors to silently propagate
 
 --
  * It's error-prone and boilerplate code checking each error. (if statements for each function with error codes)
