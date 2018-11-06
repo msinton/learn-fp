@@ -100,7 +100,7 @@ def mean(xs: Seq[Double]): Option[Double] =
 
 --
 The conclusion could be that once we start using Option, it infects our entire code base.
-We should modify our code to hanlde either Some or None... \*biut this doesn't happen\s, and the reason is that we can \*lift\s ordinary functions that operate on Option.
+We should modify our code to hanlde either Some or None... \*but this doesn't happen\s, and the reason is that we can \*lift\s ordinary functions that operate on Option.
 
 --
 ```
