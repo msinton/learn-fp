@@ -158,8 +158,35 @@ lambda syntax less because something like two thirds of the time, the lambda wou
 function. (And much of the other time I extract it into a named function.)"
 ---
 
-TODO follow the types - look at foldLeft
-currying makes it easier for the IDE to help and more than that - ...
+currying enables Type inference to work better.
+A good example of this is foldLeft
 
-TODO
-implicits
+If you use foldLeft in a non-curried form then you are forced to specify the types
+
+```
+case object Empty extends List[Nothing]
+case class Con[T](head: T, tail: List[T]) extends List[T]
+
+sealed class List[+T] {
+  def foldLeft[S](s: S, f: (S, T) => S): S = this match {
+    case Empty => s
+    case Con(head, tail) => tail.foldLeft(f(s, head), f)
+  }
+}
+```
+--
+
+Try it out
+
+```
+case object Empty extends List[Nothing]
+case class Con[T](head: T, tail: List[T]) extends List[T]
+
+sealed class List[+T] {
+  def foldLeft[S, T](s: S)(f: (S, T) => S): S = this match {
+    case Empty => s
+    case Con(head, tail) => tail.foldLeft(f(s, head))(f)
+  }
+}
+```
+

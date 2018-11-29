@@ -1,3 +1,5 @@
-package ch.five trait RNG {
+package ch.five
 
+trait RNG {
+  def nextInt: (Int, RNG)
 }

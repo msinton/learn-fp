@@ -1,0 +1,143 @@
+
+| \gPurely Functional State
+
+| :gem: :game_die: :gem:
+--
+
+| \*How can we write purely functional programs that manipulate state?
+--
+
+We'll use Random number generators as a simple example.
+
+Although probably not a very useful domain in itself, it will show us the general pattern and its nice and simple.
+
+---
+| How does a Random number generator work?
+--
+
+
+```
+val rng = new scala.util.Random
+
+rng.nextDouble
+```
+--
+
+```
+rng.nextDouble
+```
+--
+
+These methods are not \gReferentially Transparent\s, which means they aren't as \ytestable, ___, ___ and ___\s as they could be.
+--
+
+\gmodular, composable and easily parallelized
+---
+
+| How can we make a RNG referentially transparent?
+--
+A: Return the new state along with the result
+--
+
+```
+trait RNG {
+  def nextInt: (Int, RNG)
+}
+```
+
+---
+```
+case class SimpleRNG(seed: Long) extends RNG {
+  def nextInt: (Int, RNG) = {
+    val newSeed = (seed * 0x5DEECE66DL + 0xBL) & 0xFFFFFFFFFFFFL
+    val nextRNG = SimpleRNG(newSeed)
+    val n = (newSeed >>> 16).toInt
+    (n, nextRNG)
+  }
+}
+```
+--
+
+Let's try it out our new \gPure API\s!
+
+```
+val rng = SimpleRNG(42)
+```
+--
+```
+rng.nextInt
+```
+---
+
+Can you see how this method of turning stateful APIs into Pure APIs generalizes?
+--
+
+Fix this API, where \ybar\s and \gbaz\s mutate the state of Foo
+
+```
+class Foo {
+  private var state: FooState = ...
+  def bar: Bar
+  def baz: Int
+}
+
+trait Foo {
+  def bar: ?
+  def baz: ?
+}
+```
+---
+
+Back to the RNG, there are some issues with this API that become apparent as you use it
+--
+
+```
+def randomPair(rng: RNG): (Int,Int) = {
+  val (i1, _) = rng.nextInt
+  val (i2, _) = rng.nextInt
+  (i1, i2)
+}
+```
+What will happen?
+--
+What should we do?
+--
+```
+def randomPair(rng: RNG): ((Int,Int), RNG) = {
+  val (i1, rng2) = rng.nextInt
+  val (i2, rng3) = rng2.nextInt
+  ((i1, i2), rng3)
+}
+```
+--
+
+Writing lots of code like this could get repetitive, always passing on the rng. Can we improve this?
+---
+
+Exercises
+
+1.
+```
+def nonNegativeInt(rng: RNG): (Int, RNG)
+```
+2.
+```
+def double(rng: RNG): (Double, RNG)
+```
+3.
+```
+def intDouble(rng: RNG): ((Int, Double), RNG)
+```
+4.
+```
+def doubleIn(rng: RNG): ((Double, Int), RNG)
+```
+5.
+```
+def double3(rng: RNG): ((Double, Double, Double), RNG)
+```
+6.
+```
+def ints(count: Int)(rng: RNG): (List[Int], RNG)
+```
+---
