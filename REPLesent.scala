@@ -67,7 +67,7 @@ case class REPLesent(
     val bottomRow = fill(bottom)
 
     val verticalSpace = screenHeight - 3 // accounts for header, footer, and REPL prompt
-    val horizontalSpace = screenWidth - sinistral.length - dextral.length
+    val horizontalSpace = screenWidth - sinistral.length - dextral.length - 1
 
     val blankLine = {
       val padding = if (dextral.isEmpty) "" else whiteSpace * horizontalSpace + dextral
@@ -77,7 +77,7 @@ case class REPLesent(
 
   private val config = Config(width = width, height = height)
 
-  private case class Line(content: String, length: Int, private val style: Line.Style) {
+  private case class Line(content: String, length: Int, style: Line.Style, raw: String) {
     override def toString: String = content
     def isEmpty: Boolean = content.isEmpty
     def render(margin: Int): String = style(this, margin)
@@ -96,6 +96,23 @@ case class REPLesent(
       }
 
       def apply(line: Line, margin: Int): String
+    }
+
+    private def splitAtWithoutBreakingWords(str: String, n: Int): (String, String) = {
+      val wordBreakOffset = str.take(n).reverseIterator.indexWhere(_.isWhitespace)
+      if (wordBreakOffset == -1) str.splitAt(n) else str.splitAt(n - wordBreakOffset)
+    }
+
+    def split(line: Line, maxLength: Int): List[Line] = {
+      def loop(raw: String, acc: List[Line]): List[Line] = {
+        if (raw.length <= maxLength)
+          acc :+ Line(raw, line.style)
+        else {
+          val (first, next) = splitAtWithoutBreakingWords(raw, maxLength)
+          loop(next, acc :+ Line(first, line.style))
+        }
+      }
+      loop(line.raw, List())
     }
 
     private object HorizontalRuler extends Style {
@@ -134,7 +151,7 @@ case class REPLesent(
         val left = margin / 2
         val right = margin - left
 
-        val l = Line(content + padding + reset, width, LeftAligned)
+        val l = Line(content + padding + reset, width, LeftAligned, content)
 
         fill(l, left, right)
       }
@@ -157,6 +174,7 @@ case class REPLesent(
       def apply(line: Line, margin: Int): String = {
         val left = margin / 2
         val right = horizontalSpace - left - line.length
+        println("left aligned", line.length, left, right)
 
         fill(line, left, right)
       }
@@ -267,6 +285,17 @@ case class REPLesent(
       (content, drop)
     }
 
+    private def apply(raw: String, lineStyle: Style): Line = {
+      val (l1, _) = style(raw)
+      val (l2, ansiDrop) = ansi(l1)
+      val (content, emojiDrop) = emoji(l2)
+
+      println("length", l1.codePointCount(0, l1.length), ansiDrop, emojiDrop)
+      val length = l1.codePointCount(0, l1.length) - ansiDrop - emojiDrop
+
+      Line(content = content, length = length, style = lineStyle, raw)
+    }
+
     def apply(line: String): Line = {
       val (l1, lineStyle) = style(line)
       val (l2, ansiDrop) = ansi(l1)
@@ -274,7 +303,7 @@ case class REPLesent(
 
       val length = l1.codePointCount(0, l1.length) - ansiDrop - emojiDrop
 
-      Line(content = content, length = length, style = lineStyle)
+      Line(content = content, length = length, style = lineStyle, line)
     }
   }
 
@@ -482,11 +511,17 @@ case class REPLesent(
     ) {
       import config.newline
 
+      val padding = config.screenWidth / 8
+      val maxLength = config.screenWidth - padding
+
       def switchHandler: Acc = copy(handler = handler.switch)
 
       def append(line: String): Acc = {
         val (l, c) = handler(line)
-        copy(content = content :+ l, codeAcc = c.fold(codeAcc)(codeAcc :+ _))
+        if (l.length > maxLength)
+          copy(content = content ++ Line.split(l, maxLength), codeAcc = c.fold(codeAcc)(codeAcc :+ _))
+        else
+          copy(content = content :+ l, codeAcc = c.fold(codeAcc)(codeAcc :+ _))
       }
 
       def pushBuild: Acc = copy(
@@ -530,6 +565,8 @@ case class REPLesent(
     val bottomPadding = verticalSpace - topPadding - build.content.size
 
     val margin = horizontalSpace - build.maxLength
+    println("margin", margin, horizontalSpace, build.maxLength)
+    println("bottomPadding", bottomPadding)
 
     val sb = StringBuilder.newBuilder
 
@@ -543,6 +580,7 @@ case class REPLesent(
     sb ++= topRow
     sb ++= blankLine * topPadding
 
+    println("build content", build.content)
     build.content foreach render
 
     if (slideCounter && bottomPadding > 0) {
@@ -564,6 +602,7 @@ case class REPLesent(
       print(render(b))
     }
   }
+
   private def reloadDeck(): Unit = {
     val curSlide = deck.currentSlideNumber
     deck = Deck(parseSource(source))
