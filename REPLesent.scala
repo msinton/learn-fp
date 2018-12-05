@@ -290,7 +290,6 @@ case class REPLesent(
       val (l2, ansiDrop) = ansi(l1)
       val (content, emojiDrop) = emoji(l2)
 
-      println("length", l1.codePointCount(0, l1.length), ansiDrop, emojiDrop)
       val length = l1.codePointCount(0, l1.length) - ansiDrop - emojiDrop
 
       Line(content = content, length = length, style = lineStyle, raw)
@@ -565,8 +564,6 @@ case class REPLesent(
     val bottomPadding = verticalSpace - topPadding - build.content.size
 
     val margin = horizontalSpace - build.maxLength
-    println("margin", margin, horizontalSpace, build.maxLength)
-    println("bottomPadding", bottomPadding)
 
     val sb = StringBuilder.newBuilder
 
@@ -580,7 +577,6 @@ case class REPLesent(
     sb ++= topRow
     sb ++= blankLine * topPadding
 
-    println("build content", build.content)
     build.content foreach render
 
     if (slideCounter && bottomPadding > 0) {

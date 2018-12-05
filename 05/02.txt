@@ -1,0 +1,125 @@
+| \gPurely Functional State II: The 2 fns reloaded
+
+| :tokyo_tower: :pill: :tokyo_tower:
+--
+
+*** Recap ***
+
+What did we cover in part I?
+--
+
+
+We saw how it was possible to transform a \Mstateful\s API into a \CPure\s API, by returning the next state together with real result.
+
+We found that using an API like this was a bit repetitive.
+
+We thought a little about how we could fix that!
+
+---
+| \gA better API
+
+The common pattern we saw was of the form `RNG => (A,RNG)`
+
+Functions of this type are called \Gstate actions\s or \Gstate transitions\s.
+
+We want to combine them using \Gcombinators\s which are higher order functions.
+--
+
+It is convenient to define a type alias for these RNG state actions.
+
+```
+type RAND[+A] = RNG => (A, RNG)
+```
+--
+So our nextInt fn can be re-written:
+
+```
+val int: Rand[Int] = _.nextInt
+```
+---
+| Combinators
+--
+
+\*unit\s: The unit action passes a RNG state on, without using it.
+--
+
+```
+def unit[A](a: A): Rand[A] =
+  rng => (a, rng)
+```
+--
+
+\*map\s: Transforms the output of a state action without modifying the state.
+--
+
+```
+def map[A,B](s: Rand[A])(f: A => B): Rand[B] =
+  rng => {
+    val (a, rng2) = s(rng)
+    (f(a), rng2)
+}
+```
+--
+
+Write nonNegativeEven by re-using nonNegativeInt.
+...In Exercises
+---
+
+| \BNest[Nest[Nesting state actions]]
+
+We have now been able to write more elegant, less error-prone code!
+
+But there are still some things that we can't do with \*map\s, \*unit\s or \*map2\s.
+--
+
+```
+def nonNegativelessThan(n: Int): Rand[Int]
+```
+
+Why not?
+--
+
+```
+def nonNegativelessThan(n: Int): Rand[Int] =
+  map(nonNegativeInt) { i =>
+    val mod = i % n
+    if (i + (n - 1) - mod >= 0)
+      mod
+    else
+      nonNegativeLessThan(n)(???)
+  }
+```
+--
+
+We can do it if we \Rregress\s - and don't use \*map\s!
+
+```
+def nonNegativeLessThan(n: Int): Rand[Int] = { rng =>
+  val (i, rng2) = nonNegativeInt(rng)
+  val mod = i % n
+  if (i + (n - 1) - mod >= 0)
+    (mod, rng2)
+  else
+    nonNegativeLessThan(n)(rng)
+}
+```
+---
+| \R\*\k|       New        |
+| \R\*\k|    Challenger    |
+| \R\*\k|   Approaching    |
+| \R\*\k|                  |
+
+| :muscle: :v:  :muscle:
+--
+
+
+Can you think of a \Gcombinator\s that would allow us to do this?
+
+What are we trying to do in a general sense?
+
+What should the signature look like?
+---
+
+```
+def flatMap[A,B](f: Rand[A])(g: A => Rand[B]): Rand[B]
+```
