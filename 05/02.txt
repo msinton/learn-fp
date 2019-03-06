@@ -100,7 +100,7 @@ def nonNegativeLessThan(n: Int): Rand[Int] = { rng =>
   if (i + (n - 1) - mod >= 0)
     (mod, rng2)
   else
-    nonNegativeLessThan(n)(rng)
+    nonNegativeLessThan(n)(rng2)
 }
 ```
 ---
