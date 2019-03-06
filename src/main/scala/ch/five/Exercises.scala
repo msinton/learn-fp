@@ -14,10 +14,9 @@ object Exercises_1 {
   }
 
   def intDouble(rng: RNG): ((Int, Double), RNG) = {
-//    val (i, rng2) = rng.nextInt
-    val a = rng.nextInt
-    val b = double(a._2)
-    ((a._1, b._1), b._2)
+    val (i, rng2) = rng.nextInt
+    val (d, rng3) = double(rng2)
+    ((i, d), rng3)
   }
 
   def doubleInt(rng: RNG): ((Double, Int), RNG) = ???
@@ -49,21 +48,70 @@ object Exercises_2 {
       (f(a), rng2)
     }
 
-  def nonNegativeEven: Rand[Int] = ???
+  val nonNegativeEven: Rand[Int] =
+    map(nonNegativeInt)(i => i - (i % 2))
 
-  def double: Rand[Double] = ???
+  def int: Rand[Int] = rng => rng.nextInt
+
+  def double: Rand[Double] =
+    map(nonNegativeInt)(i => i.toDouble / (Int.MaxValue + 1))
 
   // we need this for intDouble, doubleInt etc
-  def map2[A, B, C](sa: Rand[A], sb: Rand[B])(f: (A, B) => C): Rand[C] = ???
+  def map2[A, B, C](sa: Rand[A], sb: Rand[B])(f: (A, B) => C): Rand[C] =
+    rng => {
+      val (a, rng2) = sa(rng)
+      val (b, rng3) = sb(rng2)
+      (f(a, b), rng3)
+    }
 
-  def doubleInt: Rand[(Double, Int)] = ???
+  def doubleInt: Rand[(Double, Int)] =
+    both(double, int)
 
-  def intDouble: Rand[(Int, Double)] = ???
+  def intDouble: Rand[(Int, Double)] =
+    both(int, double)
 
-  def both[A, B](ra: Rand[A], rb: Rand[B]): Rand[(A, B)] = ???
+  def both[A, B](ra: Rand[A], rb: Rand[B]): Rand[(A, B)] =
+    map2(ra, rb)((_, _))
 
-  def sequence[A](sas: List[Rand[A]]): Rand[List[A]] = ???
+  def sequence[A](sas: List[Rand[A]]): Rand[List[A]] =
+    rng => sas.foldLeft((List.empty[A], rng)) {
+      case ((xs, nextRng), sa) =>
+        val (a, rng2) = sa(nextRng)
+        (xs :+ a, rng2)
+    }
 
+
+
+  // TODO test
+
+  // if we provide 10, it should return a random number 0-9 (less than n)
+   def nonNegativeLessThan(n:Int): Rand[Int] = {
+    flatMap(nonNegativeInt) {
+      a => rng => {
+        val mod = a % n
+        if (a + (n - 1) - mod >= 0)
+          (mod, rng)
+        else
+         nonNegativeLessThan(n)(rng)
+      }
+    }
+  }
+
+
+  def flatMap[A,B](r: Rand[A])(f: A => Rand[B]): Rand[B]={
+    rng => {
+      val (a, rng2) = r(rng)
+      f(a)(rng2)
+    }
+  }
+
+  // TODO test/check
+  //  def sequence2[A](sas: List[Rand[A]]): Rand[List[A]] = rng =>
+//
   // use sequence to implement ints, hint use List.fill
+  def ints(n: Int): Rand[List[Int]] =
+    sequence(List.fill(n)(int))
+
+
 
 }
