@@ -9,7 +9,7 @@
 
 
 ```
-trait CreditCard { def charge(amount: Int)}
+class CreditCard { def charge(amount: Int): Unit = ??? }
 trait Cup { def price: Int }
 
 class Coffee extends Cup { def price: Int = 249 }
