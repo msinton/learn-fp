@@ -164,29 +164,27 @@ A good example of this is foldLeft
 If you use foldLeft in a non-curried form then you are forced to specify the types
 
 ```
-case object Empty extends List[Nothing]
-case class Con[T](head: T, tail: List[T]) extends List[T]
-
-sealed class List[+T] {
-  def foldLeft[S](s: S, f: (S, T) => S): S = this match {
-    case Empty => s
-    case Con(head, tail) => tail.foldLeft(f(s, head), f)
+sealed trait ListA[+A] {
+    def foldLeft[S](s: S, f: (A, S) => S): S = this match {
+      case Empty => s
+      case Cons(a, tail) => tail.foldLeft(f(a, s), f)
+    }
   }
-}
+case object Empty extends ListA[Nothing]
+case class Cons[+A](head: A, tail: ListA[A]) extends ListA[A]
 ```
 --
 
 Try it out
 
 ```
-case object Empty extends List[Nothing]
-case class Con[T](head: T, tail: List[T]) extends List[T]
-
-sealed class List[+T] {
-  def foldLeft[S, T](s: S)(f: (S, T) => S): S = this match {
-    case Empty => s
-    case Con(head, tail) => tail.foldLeft(f(s, head))(f)
+sealed trait ListA[+A] {
+    def foldLeft[S](s: S)(f: (A, S) => S): S = this match {
+      case Empty => s
+      case Cons(a, tail) => tail.foldLeft(f(a, s))(f)
+    }
   }
-}
+case object Empty extends ListA[Nothing]
+case class Cons[+A](head: A, tail: ListA[A]) extends ListA[A]
 ```
 

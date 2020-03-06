@@ -174,7 +174,7 @@ case class REPLesent(
       def apply(line: Line, margin: Int): String = {
         val left = margin / 2
         val right = horizontalSpace - left - line.length
-        println("left aligned", line.length, left, right)
+        // println("left aligned", line.length, left, right)
 
         fill(line, left, right)
       }
