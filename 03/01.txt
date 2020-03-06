@@ -5,7 +5,7 @@
 
 RECURSIVE FUNCTION APPLICATION
  
-"To understand recusrion, one must first understand recusion"
+"To understand recursion, one must first understand recursion"
 
 ---
 
@@ -19,6 +19,8 @@ Here's an implementation of gcd using Euclid's algorithm.
 def gcd(a: Int, b: Int): Int =
   if (b == 0) a else gcd(b, a % b)
 ```
+
+--
 
 gcd(14, 21) is evaluated as follows:
 
@@ -46,6 +48,7 @@ now consider factorial
 def factorial(n: Int): Int =
   if (n == 0) 1 else n * factorial(n - 1)
 ```
+--
 
 factorial(4) is evaluated as follows:
 
